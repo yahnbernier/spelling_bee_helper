@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Spelling Bee</h1>
+        <p>Your spelling practice application</p>
+        
+        <div class="letter-input">
+            <h2>Enter Letters</h2>
+            <form action="{{ url_for('lookup') }}" method="POST" id="home-form">
+                <input type="text" 
+                       name="letters" 
+                       id="letters" 
+                       placeholder="Enter up to 7 letters (UPPERCASE = must contain)" 
+                       pattern="[A-Za-z]{}"
+                       required />
+                <input type="hidden" name="must_contain" id="must_contain" value="" />
+                <button type="submit">Look Up</button>
+            </form>
+        </div>
+        
+        <script>
+        document.getElementById('home-form').addEventListener('submit', function(e) {
+            const lettersInput = document.getElementById('letters');
+            const mustContainInput = document.getElementById('must_contain');
+            const letters = lettersInput.value;
+            
+            // Find uppercase letters
+            const uppercaseLetters = letters.match(/[A-Z]/g) || [];
+            
+            // If exactly one uppercase letter, set it as must_contain
+            if (uppercaseLetters.length === 1) {
+                mustContainInput.value = uppercaseLetters[0].toLowerCase();
+            }
+            
+            // Convert all letters to lowercase
+            lettersInput.value = letters.toLowerCase();
+        });
+        </script>
+               
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+        </nav>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

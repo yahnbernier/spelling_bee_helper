@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lookup Results - Spelling Bee</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Spelling Bee Helper</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <p style="margin: 0;">Searching for words with letters: <span id="possibles"><strong>{{ letters }}</strong></span></p>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" id="reload-btn" style="background-color: #9b59b6; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; white-space: nowrap;">Reload Words</button>
+                <button type="submit" form="lookup-form" style="white-space: nowrap;">Look Up</button>
+            </div>
+        </div>
+        
+        <div class="letter-input">
+            <form id="lookup-form" action="{{ url_for('lookup') }}" method="POST">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="letters">Letters:</label>
+                        <input type="text" 
+                               name="letters" 
+                               id="letters" 
+                               value="{{ letters }}"
+                               placeholder="e.g., ABCDEFG" 
+                               pattern="[A-Za-z]{0,}" />
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="starts_with"><span style="border-bottom: 3px solid #00547e; font-weight: bold;">Starts With</span> (Max 2):</label>
+                        <input type="text" 
+                               name="starts_with" 
+                               id="starts_with" 
+                               maxlength="2" 
+                               value="{{ starts_with or '' }}"
+                               placeholder="e.g., AB" 
+                               pattern="[A-Za-z]{0,2}" />
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="must_contain"><span style="background-color: #f5cbee; font-weight: bold; padding: 2px 4px; border-radius: 2px;">Must Contain</span> (Max 1):</label>
+                        <input type="text" 
+                               name="must_contain" 
+                               id="must_contain" 
+                               maxlength="1" 
+                               value="{{ must_contain or '' }}"
+                               placeholder="e.g., X" 
+                               pattern="[A-Za-z]{0,1}" />
+                    </div>
+                    
+                    <div class="form-field" style="flex-basis: 100%;">
+                        <div style="display: flex; gap: 30px; align-items: flex-start;">
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-weight: normal;">Word List:</label>
+                                <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                    <input type="radio" name="word_list" id="word_list_regular" value="regular" {% if word_list != 'all' %}checked{% endif %} />
+                                    <span style="font-size: 0.9em;">Regular Words</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                    <input type="radio" name="word_list" id="word_list_all" value="all" {% if word_list == 'all' %}checked{% endif %} />
+                                    <span style="font-size: 0.9em;">All Words</span>
+                                </label>
+                            </div>
+                            
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: nowrap;">
+                                <label style="margin-right: 5px; white-space: nowrap;">Word Length:</label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="4" id="len4" {% if not word_lengths or '4' in word_lengths %}checked{% endif %} />
+                                    <span>4</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="5" id="len5" {% if not word_lengths or '5' in word_lengths %}checked{% endif %} />
+                                    <span>5</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="6" id="len6" {% if not word_lengths or '6' in word_lengths %}checked{% endif %} />
+                                    <span>6</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="7" id="len7" {% if not word_lengths or '7' in word_lengths %}checked{% endif %} />
+                                    <span>7</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="8" id="len8" {% if not word_lengths or '8' in word_lengths %}checked{% endif %} />
+                                    <span>8</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="9" id="len9" {% if not word_lengths or '9' in word_lengths %}checked{% endif %} />
+                                    <span>9</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="10" id="len10" {% if not word_lengths or '10' in word_lengths %}checked{% endif %} />
+                                    <span>10</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="11" id="len11" {% if not word_lengths or '11' in word_lengths %}checked{% endif %} />
+                                    <span>11</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="12" id="len12" {% if not word_lengths or '12' in word_lengths %}checked{% endif %} />
+                                    <span>12</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.85em;">
+                                    <input type="checkbox" name="length" value="12+" id="len12plus" {% if not word_lengths or '12+' in word_lengths %}checked{% endif %} />
+                                    <span>12+</span>
+                                </label>
+                                <div style="display: flex; flex-direction: column; gap: 4px; margin-left: 8px;">
+                                    <button type="button" id="select-all-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Select All</button>
+                                    <button type="button" id="clear-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Clear All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div id="results-display">
+            <div class="results-columns">
+                <div class="results-column">
+                    <h3>Possibles: <span id="possibles-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({{ possibles|length if possibles else 0 }})</span></h3>
+                    <div id="possibles-list">
+                        {% if possibles %}
+                            <ul>
+                            {% for word in possibles %}
+                                <li>{{ word }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Type letters to see results...</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="results-column">
+                    <h3>Candidates: <span id="candidates-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({% if candidates %}{{ candidates.values()|map('length')|sum }}{% else %}0{% endif %})</span></h3>
+                    <div id="candidates-list">
+                        {% if candidates %}
+                            {% for length, word_list in candidates.items() %}
+                                <div class="length-group">
+                                    <h4>Words with {{ length }} Letters</h4>
+                                    <ul>
+                                    {% for word_obj in word_list %}
+                                        <li>
+                                            {% if not word_obj.in_regular %}
+                                                <input type="checkbox" class="word-checkbox" value="{{ word_obj.word }}" />
+                                            {% endif %}
+                                            <span{% if word_obj.is_pangram %} class="pangram" title="Pangram: uses all 7 letters!"{% endif %}>{{ word_obj.word }}</span>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>Type letters to see results...</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="results-column">
+                    <div class="column-header">
+                        <h3>Words to Add:</h3>
+                        <div style="display: flex; gap: 5px;">
+                            <button type="button" id="clear-words-to-add" class="clear-btn" style="background-color: #e74c3c;">Clear All</button>
+                            <button type="button" id="copy-selected" class="copy-btn">Copy Selected</button>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label for="manual-words" style="font-weight: bold; display: block; margin-bottom: 5px;">Manual Entry (one per line):</label>
+                        <textarea id="manual-words" rows="5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                    <div id="words-to-add-list">
+                        <p>Check words to add them here...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+        // Real-time search functionality
+        let searchTimeout;
+        const possibles = document.getElementById('possibles');
+        const lettersInput = document.getElementById('letters');
+        const startsWithInput = document.getElementById('starts_with');
+        const mustContainInput = document.getElementById('must_contain');
+        const wordListRadios = document.querySelectorAll('input[name="word_list"]');
+        const lengthCheckboxes = document.querySelectorAll('input[name="length"]');
+        const possiblesList = document.getElementById('possibles-list');
+        const candidatesList = document.getElementById('candidates-list');
+        const wordsToAddList = document.getElementById('words-to-add-list');
+        
+        // Persistent set of words to add
+        const wordsToAdd = new Set();
+        
+        // LocalStorage functions for search persistence
+        function saveSearchState() {
+            const state = {
+                letters: lettersInput.value,
+                starts_with: startsWithInput.value,
+                must_contain: mustContainInput.value,
+                word_list: document.querySelector('input[name="word_list"]:checked').value,
+                word_lengths: Array.from(lengthCheckboxes).filter(cb => cb.checked).map(cb => cb.value)
+            };
+            localStorage.setItem('spellingBeeSearch', JSON.stringify(state));
+        }
+        
+        function loadSearchState() {
+            const saved = localStorage.getItem('spellingBeeSearch');
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    
+                    // Only load from localStorage if the form fields are empty
+                    // (i.e., we didn't come here from a form submission)
+                    if (!lettersInput.value && !startsWithInput.value && !mustContainInput.value) {
+                        lettersInput.value = state.letters || '';
+                        startsWithInput.value = state.starts_with || '';
+                        mustContainInput.value = state.must_contain || '';
+                        
+                        // Set word list radio
+                        const radio = document.querySelector(`input[name="word_list"][value="${state.word_list}"]`);
+                        if (radio) radio.checked = true;
+                        
+                        // Set length checkboxes
+                        if (state.word_lengths) {
+                            lengthCheckboxes.forEach(cb => {
+                                cb.checked = state.word_lengths.includes(cb.value);
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to load search state:', e);
+                }
+            }
+        }
+        
+        // Function to highlight must_contain letter and starts_with letters in a word
+        function highlightWord(word, mustContainLetter, startsWithLetters) {
+            if (!mustContainLetter && !startsWithLetters) return word;
+            
+            const lowerWord = word.toLowerCase();
+            let result = '';
+            let i = 0;
+            
+            // Process each character
+            while (i < word.length) {
+                let charAdded = false;
+                
+                // Check if this is the start of starts_with match
+                if (startsWithLetters && i === 0 && lowerWord.startsWith(startsWithLetters.toLowerCase())) {
+                    const prefix = word.substring(0, startsWithLetters.length);
+                    
+                    // Check if any character in prefix is the must_contain letter
+                    let prefixHtml = '';
+                    for (let j = 0; j < prefix.length; j++) {
+                        if (mustContainLetter && prefix[j].toLowerCase() === mustContainLetter.toLowerCase() && 
+                            lowerWord.indexOf(mustContainLetter.toLowerCase()) === j) {
+                            // This is both starts_with AND must_contain
+                            prefixHtml += `<span class="highlight-letter highlight-starts-with">${prefix[j]}</span>`;
+                        } else {
+                            prefixHtml += prefix[j];
+                        }
+                    }
+                    result += `<span class="highlight-starts-with">${prefixHtml}</span>`;
+                    i += startsWithLetters.length;
+                    charAdded = true;
+                }
+                
+                // Check if this is the must_contain letter (and not already processed)
+                if (!charAdded && mustContainLetter && word[i].toLowerCase() === mustContainLetter.toLowerCase() &&
+                    lowerWord.indexOf(mustContainLetter.toLowerCase()) === i) {
+                    result += `<span class="highlight-letter">${word[i]}</span>`;
+                    i++;
+                    charAdded = true;
+                }
+                
+                // Regular character
+                if (!charAdded) {
+                    result += word[i];
+                    i++;
+                }
+            }
+            
+            return result;
+        }
+        
+        // Load saved search state from localStorage
+        loadSearchState();
+        
+        function updateWordsToAddDisplay() {
+            if (wordsToAdd.size === 0) {
+                wordsToAddList.innerHTML = '<p>Check words to add them here...</p>';
+            } else {
+                const sortedWords = Array.from(wordsToAdd).sort();
+                wordsToAddList.innerHTML = '<ul>' + 
+                    sortedWords.map(word => `<li>${word}</li>`).join('') + 
+                    '</ul>';
+            }
+        }
+        
+        function buildSortedUniqueString(str) {
+            // 1. Create a Set from the string to get unique characters.
+            // The spread operator makes the string iterable.
+            const uniqueChars = [...new Set(str)];
+
+            // 2. Sort the array of unique characters alphabetically.
+            uniqueChars.sort();
+
+            // 3. Join the sorted array back into a single string.
+            const sortedUniqueStr = uniqueChars.join('');
+
+            return sortedUniqueStr;
+        }
+
+        function performSearch() {
+            const letters = lettersInput.value.trim().toLowerCase();
+            const startsWith = startsWithInput.value.trim().toLowerCase();
+            const mustContain = mustContainInput.value.trim().toLowerCase();
+            const wordList = document.querySelector('input[name="word_list"]:checked').value;
+            
+            // Save current state to localStorage
+            saveSearchState();
+            
+            // Check if we have any letters from any field
+            const hasAnyLetters = letters || startsWith || mustContain;
+            
+            // snag union of fields and sort
+            possible_letters = letters + startsWith + mustContain;
+            //console.log(possible_letters)
+            unique_letters = buildSortedUniqueString(possible_letters);
+            //console.log(unique_letters)
+            possibles.innerHTML = '<strong>' + unique_letters + '</strong>';
+
+            if (!hasAnyLetters) {
+                possiblesList.innerHTML = '<p>Type letters to see results...</p>';
+                candidatesList.innerHTML = '<p>Type letters to see results...</p>';
+                return;
+            }
+            
+            // Build query string
+            const params = new URLSearchParams({
+                letters: letters,
+                starts_with: startsWith,
+                must_contain: mustContain,
+                word_list: wordList
+            });
+            
+            // Add checked length filters to params
+            lengthCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    params.append('length', checkbox.value);
+                }
+            });
+            
+            // Show loading state
+            possiblesList.innerHTML = '<p>Searching...</p>';
+            candidatesList.innerHTML = '<p>Searching...</p>';
+            
+            fetch(`/api/search?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update words list
+                    if (data.possibles && data.possibles.length > 0) {
+                        possiblesList.innerHTML = '<ul>' + 
+                            data.possibles.map(word => `<li>${highlightWord(word, mustContain, startsWith)}</li>`).join('') + 
+                            '</ul>';
+                        document.getElementById('possibles-count').textContent = `(${data.possibles.length})`;
+                    } else {
+                        possiblesList.innerHTML = '<p>No words found.</p>';
+                        document.getElementById('possibles-count').textContent = '(0)';
+                    }
+                    
+                    // Update candidates list (grouped by length)
+                    if (data.candidates && Object.keys(data.candidates).length > 0) {
+                        let html = '';
+                        let totalCount = 0;
+                        // Iterate through lengths in descending order
+                        Object.keys(data.candidates).sort((a, b) => b - a).forEach(length => {
+                            totalCount += data.candidates[length].length;
+                            html += `<div class="length-group">
+                                        <h4>Words with ${length} Letters</h4>
+                                        <ul>`;
+                            data.candidates[length].forEach(wordObj => {
+                                html += `<li>`;
+                                if (!wordObj.in_regular) {
+                                    const isChecked = wordsToAdd.has(wordObj.word) ? 'checked' : '';
+                                    html += `<input type="checkbox" class="word-checkbox" value="${wordObj.word}" ${isChecked} />`;
+                                }
+                                const pangramClass = wordObj.is_pangram ? ' class="pangram" title="Pangram: uses all 7 letters!"' : '';
+                                html += `<span${pangramClass}>${highlightWord(wordObj.word, mustContain, startsWith)}</span></li>`;
+                            });
+                            html += '</ul></div>';
+                        });
+                        candidatesList.innerHTML = html;
+                        document.getElementById('candidates-count').textContent = `(${totalCount})`;
+                        
+                        // Add event listeners to checkboxes
+                        document.querySelectorAll('.word-checkbox').forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                if (this.checked) {
+                                    wordsToAdd.add(this.value);
+                                } else {
+                                    wordsToAdd.delete(this.value);
+                                }
+                                updateWordsToAddDisplay();
+                            });
+                        });
+                    } else {
+                        candidatesList.innerHTML = '<p>No words found.</p>';
+                        document.getElementById('candidates-count').textContent = '(0)';
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    possiblesList.innerHTML = '<p>Error performing search.</p>';
+                    candidatesList.innerHTML = '<p>Error performing search.</p>';
+                });
+        }
+        
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 300);
+        }
+        
+        // Add event listeners to all inputs
+        lettersInput.addEventListener('input', debounceSearch);
+        startsWithInput.addEventListener('input', debounceSearch);
+        mustContainInput.addEventListener('input', debounceSearch);
+        
+        // Allow Enter key to trigger immediate search on text inputs
+        [lettersInput, startsWithInput, mustContainInput].forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    performSearch();
+                }
+            });
+        });
+        
+        wordListRadios.forEach(radio => {
+            radio.addEventListener('change', performSearch);
+        });
+        
+        // Add event listeners to all length checkboxes
+        lengthCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', performSearch);
+        });
+        
+        // Select All button functionality
+        const selectAllLengthsBtn = document.getElementById('select-all-lengths');
+        selectAllLengthsBtn.addEventListener('click', function() {
+            lengthCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            performSearch();
+        });
+        
+        // Clear All button functionality
+        const clearLengthsBtn = document.getElementById('clear-lengths');
+        clearLengthsBtn.addEventListener('click', function() {
+            lengthCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            performSearch();
+        });
+        
+        // Copy Selected button functionality
+        const copySelectedBtn = document.getElementById('copy-selected');
+        const manualWordsTextarea = document.getElementById('manual-words');
+        const clearWordsToAddBtn = document.getElementById('clear-words-to-add');
+        
+        // Clear Words to Add button
+        clearWordsToAddBtn.addEventListener('click', function() {
+            wordsToAdd.clear();
+            manualWordsTextarea.value = '';
+            updateWordsToAddDisplay();
+            // Uncheck all checkboxes
+            document.querySelectorAll('.word-checkbox:checked').forEach(cb => cb.checked = false);
+        });
+        
+        copySelectedBtn.addEventListener('click', function() {
+            // Get manual words from textarea
+            const manualWords = manualWordsTextarea.value
+                .split('\n')
+                .map(word => word.trim().toLowerCase())
+                .filter(word => word.length > 0);
+            
+            // Combine with checked words
+            const allWords = new Set([...wordsToAdd, ...manualWords]);
+            
+            if (allWords.size === 0) {
+                alert('Please select at least one word to add.');
+                return;
+            }
+            
+            const sortedWords = Array.from(allWords).sort();
+            const text = sortedWords.join('\n');
+            
+            // Use Clipboard API to copy to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                // Show feedback to user
+                const originalText = copySelectedBtn.textContent;
+                copySelectedBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copySelectedBtn.textContent = originalText;
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard. Please try again.');
+            });
+        });
+        
+        // Reload word lists button functionality
+        const reloadBtn = document.getElementById('reload-btn');
+        reloadBtn.addEventListener('click', function() {
+            const originalText = reloadBtn.textContent;
+            reloadBtn.textContent = 'Reloading...';
+            reloadBtn.disabled = true;
+            
+            fetch('/reload', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        reloadBtn.textContent = 'Reloaded!';
+                        // Show stats in console
+                        console.log('Word lists reloaded:', data.stats);
+                        // Perform search again with new data
+                        setTimeout(() => {
+                            performSearch();
+                            reloadBtn.textContent = originalText;
+                            reloadBtn.disabled = false;
+                        }, 1500);
+                    } else {
+                        reloadBtn.textContent = 'Error!';
+                        alert('Failed to reload: ' + data.message);
+                        setTimeout(() => {
+                            reloadBtn.textContent = originalText;
+                            reloadBtn.disabled = false;
+                        }, 2000);
+                    }
+                })
+                .catch(err => {
+                    console.error('Reload error:', err);
+                    reloadBtn.textContent = 'Error!';
+                    alert('Failed to reload word lists. Please try again.');
+                    setTimeout(() => {
+                        reloadBtn.textContent = originalText;
+                        reloadBtn.disabled = false;
+                    }, 2000);
+                });
+        });
+        
+        // Perform initial search if there are values in any field
+        if (lettersInput.value || startsWithInput.value || mustContainInput.value) {
+            performSearch();
+        }
+        </script>
+        
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+        </nav>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
