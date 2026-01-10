@@ -95,7 +95,27 @@ def api_search():
     starts_with = request.args.get('starts_with', '').strip().lower()
     must_contain = request.args.get('must_contain', '').strip().lower()
     word_list = request.args.get('word_list', 'regular')  # 'regular' or 'all'
-    word_lengths = request.args.getlist('length')  # Get all checked length values
+    
+    # Get word lengths filter from query string (now consolidated as comma-separated ranges)
+    lengths_param = request.args.get('lengths', '')
+    if lengths_param:
+        word_lengths = set()
+        for range_str in lengths_param.split(','):
+            range_str = range_str.strip()
+            if range_str == '13ORMORE':
+                # Include all words with length >= 13
+                word_lengths.update(str(i) for i in range(13, 30))
+            elif '-' in range_str:
+                # Range like "4-7"
+                start, end = range_str.split('-')
+                word_lengths.update(str(i) for i in range(int(start), int(end) + 1))
+            else:
+                # Single number
+                word_lengths.add(range_str)
+        word_lengths = list(word_lengths)  # Convert to list for get_possibles
+    else:
+        # Default: all lengths from 4 to 12+
+        word_lengths = []
     
     # Combine all letters from all inputs
     letters = set(letters_input)

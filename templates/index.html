@@ -9,12 +9,12 @@
 <body>
     <div class="container">
         <h1>Spelling Bee Helper</h1>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p style="margin: 0;">Searching for words with letters: <span id="possibles"><strong>{{ letters }}</strong></span></p>
-            <div style="display: flex; gap: 10px;">
-                <button type="button" id="reload-btn" style="background-color: #9b59b6; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; white-space: nowrap;">Reload Words</button>
-                <button type="submit" form="lookup-form" style="white-space: nowrap;">Look Up</button>
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button type="button" id="reload-btn" style="background-color: #9b59b6; color: white; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75em; font-weight: bold; white-space: nowrap;">Reload Words</button>
+                <button type="submit" form="lookup-form" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Look Up</button>
             </div>
+            <p style="margin: 0;">Searching for words with letters: <span id="possibles"><strong>{{ letters }}</strong></span></p>
         </div>
         
         <div class="letter-input">
@@ -56,22 +56,25 @@
                         <div style="display: flex; gap: 30px; align-items: flex-start;">
                             <div style="display: flex; flex-direction: column; gap: 5px;">
                                 <label style="font-weight: normal;">Word List:</label>
-                                <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                    <input type="radio" name="word_list" id="word_list_regular" value="regular" {% if word_list != 'all' %}checked{% endif %} />
-                                    <span style="font-size: 0.9em;">Regular Words</span>
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                    <input type="radio" name="word_list" id="word_list_all" value="all" {% if word_list == 'all' %}checked{% endif %} />
-                                    <span style="font-size: 0.9em;">All Words</span>
-                                </label>
+                                <div style="display: flex; gap: 15px; align-items: center;">
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                        <input type="radio" name="word_list" id="word_list_regular" value="regular" {% if word_list != 'all' %}checked{% endif %} />
+                                        <span style="font-size: 0.9em;">Regular Words</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                        <input type="radio" name="word_list" id="word_list_all" value="all" {% if word_list == 'all' %}checked{% endif %} />
+                                        <span style="font-size: 0.9em;">All Words</span>
+                                    </label>
+                                </div>
                             </div>
                             
-                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: nowrap;">
-                                <label style="margin-right: 5px; white-space: nowrap;">Word Length:</label>
-                                <label class="checkbox-label" style="font-size: 0.85em;">
-                                    <input type="checkbox" name="length" value="4" id="len4" {% if not word_lengths or '4' in word_lengths %}checked{% endif %} />
-                                    <span>4</span>
-                                </label>
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <label style="font-weight: normal;">Word Length:</label>
+                                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                    <label class="checkbox-label" style="font-size: 0.85em;">
+                                        <input type="checkbox" name="length" value="4" id="len4" {% if not word_lengths or '4' in word_lengths %}checked{% endif %} />
+                                        <span>4</span>
+                                    </label>
                                 <label class="checkbox-label" style="font-size: 0.85em;">
                                     <input type="checkbox" name="length" value="5" id="len5" {% if not word_lengths or '5' in word_lengths %}checked{% endif %} />
                                     <span>5</span>
@@ -104,13 +107,14 @@
                                     <input type="checkbox" name="length" value="12" id="len12" {% if not word_lengths or '12' in word_lengths %}checked{% endif %} />
                                     <span>12</span>
                                 </label>
-                                <label class="checkbox-label" style="font-size: 0.85em;">
-                                    <input type="checkbox" name="length" value="12+" id="len12plus" {% if not word_lengths or '12+' in word_lengths %}checked{% endif %} />
-                                    <span>12+</span>
-                                </label>
-                                <div style="display: flex; flex-direction: column; gap: 4px; margin-left: 8px;">
-                                    <button type="button" id="select-all-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Select All</button>
-                                    <button type="button" id="clear-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Clear All</button>
+                                    <label class="checkbox-label" style="font-size: 0.85em;">
+                                        <input type="checkbox" name="length" value="12+" id="len12plus" {% if not word_lengths or '12+' in word_lengths %}checked{% endif %} />
+                                        <span>12+</span>
+                                    </label>
+                                    <div style="display: flex; gap: 4px; margin-left: 8px;">
+                                        <button type="button" id="select-all-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Select All</button>
+                                        <button type="button" id="clear-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Clear All</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -121,21 +125,6 @@
         
         <div id="results-display">
             <div class="results-columns">
-                <div class="results-column">
-                    <h3>Possibles: <span id="possibles-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({{ possibles|length if possibles else 0 }})</span></h3>
-                    <div id="possibles-list">
-                        {% if possibles %}
-                            <ul>
-                            {% for word in possibles %}
-                                <li>{{ word }}</li>
-                            {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p>Type letters to see results...</p>
-                        {% endif %}
-                    </div>
-                </div>
-                
                 <div class="results-column">
                     <h3>Candidates: <span id="candidates-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({% if candidates %}{{ candidates.values()|map('length')|sum }}{% else %}0{% endif %})</span></h3>
                     <div id="candidates-list">
@@ -175,6 +164,21 @@
                     </div>
                     <div id="words-to-add-list">
                         <p>Check words to add them here...</p>
+                    </div>
+                </div>
+                
+                <div class="results-column">
+                    <h3>Possibles: <span id="possibles-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({{ possibles|length if possibles else 0 }})</span></h3>
+                    <div id="possibles-list">
+                        {% if possibles %}
+                            <ul>
+                            {% for word in possibles %}
+                                <li>{{ word }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Type letters to see results...</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -349,12 +353,63 @@
                 word_list: wordList
             });
             
-            // Add checked length filters to params
-            lengthCheckboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    params.append('length', checkbox.value);
+            // Build compact length ranges
+            const checkedLengths = Array.from(lengthCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            if (checkedLengths.length > 0) {
+                // Separate numeric lengths from '12+'
+                const numericLengths = checkedLengths
+                    .filter(v => v !== '12+')
+                    .map(v => parseInt(v))
+                    .sort((a, b) => a - b);
+                const has12Plus = checkedLengths.includes('12+');
+                
+                // Build ranges from consecutive numbers
+                const ranges = [];
+                let rangeStart = null;
+                let rangeEnd = null;
+                
+                for (let i = 0; i < numericLengths.length; i++) {
+                    const current = numericLengths[i];
+                    
+                    if (rangeStart === null) {
+                        rangeStart = current;
+                        rangeEnd = current;
+                    } else if (current === rangeEnd + 1) {
+                        rangeEnd = current;
+                    } else {
+                        // End of consecutive sequence
+                        if (rangeStart === rangeEnd) {
+                            ranges.push(rangeStart.toString());
+                        } else {
+                            ranges.push(`${rangeStart}-${rangeEnd}`);
+                        }
+                        rangeStart = current;
+                        rangeEnd = current;
+                    }
                 }
-            });
+                
+                // Add final range
+                if (rangeStart !== null) {
+                    if (rangeStart === rangeEnd) {
+                        ranges.push(rangeStart.toString());
+                    } else {
+                        ranges.push(`${rangeStart}-${rangeEnd}`);
+                    }
+                }
+                
+                // Add 13ORMORE if 12+ is checked
+                if (has12Plus) {
+                    ranges.push('13ORMORE');
+                }
+                
+                // Add as single comma-separated parameter
+                if (ranges.length > 0) {
+                    params.append('lengths', ranges.join(','));
+                }
+            }
             
             // Show loading state
             possiblesList.innerHTML = '<p>Searching...</p>';

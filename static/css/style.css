@@ -383,3 +383,75 @@ button[type="submit"]:hover {
     font-weight: bold;
     padding: 1;
 }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        padding: 15px;
+        max-width: 100%;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+    
+    /* Stack form fields vertically */
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-field {
+        min-width: 100%;
+    }
+    
+    /* Allow word length checkboxes to wrap on mobile */
+    .form-field > div {
+        flex-wrap: wrap !important;
+    }
+    
+    .form-field > div > div {
+        flex-wrap: wrap !important;
+    }
+    
+    /* Stack results columns vertically */
+    .results-columns {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .results-column {
+        width: 100%;
+    }
+    
+    /* Reduce scroll height on mobile */
+    #possibles-list,
+    #candidates-list {
+        max-height: 400px;
+    }
+    
+    /* Smaller buttons on mobile */
+    button {
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+    }
+    
+    .clear-btn {
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+    }
+    
+    /* Button container already left-aligned, no changes needed */
+    
+    /* Make word length section wrap better */
+    .checkbox-label {
+        font-size: 0.8em !important;
+    }
+    
+    /* Smaller manual entry textarea */
+    #manual-words {
+        font-size: 12px !important;
+    }
+}
