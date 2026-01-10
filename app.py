@@ -62,12 +62,8 @@ all_words = load_all_words( ALL_WORDS_FILENAME )
 # Load regular words using shared function
 load_regular_words(GOOGLE_FILE_ID_REGULAR_WORDS)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
-
-@app.route('/lookup', methods=['GET', 'POST'])
-def lookup():
     if request.method == 'POST':
         letters = request.form.get('letters', '').strip()
         starts_with = request.form.get('starts_with', '').strip().lower()
@@ -82,15 +78,16 @@ def lookup():
         
         (possibles, candidates) = get_possibles( words, all_words, letters, starts_with, must_contain, word_list, word_lengths )
             
-        return render_template('lookup.html', 
+        return render_template('index.html', 
                              letters=letters, 
                              starts_with=starts_with, 
                              must_contain=must_contain,
                              word_list=word_list,
                              word_lengths=word_lengths,
-                             words=possibles, 
+                             possibles=possibles, 
                              candidates=candidates)
-    return redirect(url_for('index'))
+    # GET request - show empty form
+    return render_template('index.html', letters='', starts_with='', must_contain='', word_list='regular', word_lengths=[], possibles=[], candidates={})
 
 @app.route('/api/search', methods=['GET'])
 def api_search():
