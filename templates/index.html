@@ -8,18 +8,15 @@
 </head>
 <body>
     <div class="container">
-        <h1 style="text-align: center; font-size: 2.5em; margin-bottom: 10px; color: #1a1a1a; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+        <h1 style="text-align: center; font-size: 2.5em; margin-bottom: 30px; color: #1a1a1a; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
             🐝 Spelling Bee Helper 🐝
         </h1>
-        <div style="margin-bottom: 20px;">
-            <p style="margin: 0; text-align: center; font-size: 1.1em;">Searching for words with letters: <span id="possibles"><strong>{{ letters }}</strong></span></p>
-        </div>
         
         <div class="letter-input">
             <form id="lookup-form" action="{{ url_for('index') }}" method="POST">
                 <div class="form-row">
                     <div class="form-field">
-                        <label for="letters">Searching for Words with Letters (up to 7):</label>
+                        <label for="letters">Letters (up to 7):</label>
                         <input type="text" 
                                name="letters" 
                                id="letters" 
@@ -63,6 +60,7 @@
                                         <input type="radio" name="word_list" id="word_list_all" value="all" {% if word_list == 'all' %}checked{% endif %} />
                                         <span style="font-size: 0.9em;">All Words</span>
                                     </label>
+                                    <button type="button" id="reload-btn" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap; margin-left: 8px;">🔄 Reload</button>
                                 </div>
                             </div>
                             
@@ -340,7 +338,9 @@
             //console.log(possible_letters)
             unique_letters = buildSortedUniqueString(possible_letters);
             //console.log(unique_letters)
-            possibles.innerHTML = '<strong>' + unique_letters + '</strong>';
+            if (possibles) {
+                possibles.innerHTML = '<strong>' + unique_letters + '</strong>';
+            }
 
             if (!hasAnyLetters) {
                 possiblesList.innerHTML = '<p>Type letters to see results...</p>';
@@ -662,15 +662,6 @@
                 });
         });
         </script>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ffd700; text-align: center;">
-            <button type="button" id="reload-btn" style="background-color: #1a1a1a; color: #ffd700; padding: 10px 20px; border: 2px solid #ffd700; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold; white-space: nowrap; transition: all 0.3s ease;">🔄 Reload Words</button>
-        </div>
-        
-        <nav>
-            <a href="/">Home</a>
-            <a href="/about">About</a>
-        </nav>
     </div>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
