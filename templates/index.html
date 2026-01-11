@@ -8,20 +8,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>Spelling Bee Helper</h1>
+        <h1 style="text-align: center; font-size: 2.5em; margin-bottom: 10px; color: #1a1a1a; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+            🐝 Spelling Bee Helper 🐝
+        </h1>
         <div style="margin-bottom: 20px;">
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <button type="button" id="reload-btn" style="background-color: #9b59b6; color: white; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75em; font-weight: bold; white-space: nowrap;">Reload Words</button>
-                <button type="submit" form="lookup-form" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Look Up</button>
-            </div>
-            <p style="margin: 0;">Searching for words with letters: <span id="possibles"><strong>{{ letters }}</strong></span></p>
+            <p style="margin: 0; text-align: center; font-size: 1.1em;">Searching for words with letters: <span id="possibles"><strong>{{ letters }}</strong></span></p>
         </div>
         
         <div class="letter-input">
             <form id="lookup-form" action="{{ url_for('index') }}" method="POST">
                 <div class="form-row">
                     <div class="form-field">
-                        <label for="letters">Letters:</label>
+                        <label for="letters">Searching for Words with Letters (up to 7):</label>
                         <input type="text" 
                                name="letters" 
                                id="letters" 
@@ -295,6 +293,11 @@
         // Load saved search state from localStorage
         loadSearchState();
         
+        // Perform initial search if there are values in any field (after loading state)
+        if (lettersInput.value || startsWithInput.value || mustContainInput.value) {
+            performSearch();
+        }
+        
         function updateWordsToAddDisplay() {
             if (wordsToAdd.size === 0) {
                 wordsToAddList.innerHTML = '<p>Check words to add them here...</p>';
@@ -481,8 +484,57 @@
             searchTimeout = setTimeout(performSearch, 300);
         }
         
-        // Add event listeners to all inputs
-        lettersInput.addEventListener('input', debounceSearch);
+        // Handle single capital letter in letters input
+        lettersInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            
+            // Remove any non-letter characters
+            value = value.replace(/[^A-Za-z]/g, '');
+            
+            // Track unique letters (case-insensitive) and their first occurrence
+            const seen = new Set();
+            const capitals = [];
+            let result = '';
+            
+            for (let i = 0; i < value.length && result.length < 7; i++) {
+                const char = value[i];
+                const lowerChar = char.toLowerCase();
+                
+                // Skip if we've already seen this letter
+                if (seen.has(lowerChar)) {
+                    continue;
+                }
+                
+                seen.add(lowerChar);
+                
+                // Track capital letters
+                if (char >= 'A' && char <= 'Z') {
+                    capitals.push(char);
+                }
+                
+                result += char;
+            }
+            
+            // If there are multiple capitals, convert all but the first to lowercase
+            if (capitals.length > 1) {
+                for (let i = 1; i < capitals.length; i++) {
+                    result = result.replace(capitals[i], capitals[i].toLowerCase());
+                }
+            }
+            
+            // Update the input value
+            e.target.value = result;
+            
+            // Update must_contain if there's exactly one capital
+            const finalCapitals = result.match(/[A-Z]/g);
+            if (finalCapitals && finalCapitals.length === 1) {
+                mustContainInput.value = finalCapitals[0].toLowerCase();
+            }
+            
+            debounceSearch();
+        });
+        
+        // Add event listeners to other inputs
         startsWithInput.addEventListener('input', debounceSearch);
         mustContainInput.addEventListener('input', debounceSearch);
         
@@ -609,12 +661,11 @@
                     }, 2000);
                 });
         });
-        
-        // Perform initial search if there are values in any field
-        if (lettersInput.value || startsWithInput.value || mustContainInput.value) {
-            performSearch();
-        }
         </script>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ffd700; text-align: center;">
+            <button type="button" id="reload-btn" style="background-color: #1a1a1a; color: #ffd700; padding: 10px 20px; border: 2px solid #ffd700; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold; white-space: nowrap; transition: all 0.3s ease;">🔄 Reload Words</button>
+        </div>
         
         <nav>
             <a href="/">Home</a>
