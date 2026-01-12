@@ -139,11 +139,11 @@ nav a:hover {
 .clear-btn {
     background-color: #1a1a1a;
     color: #ffd700;
-    padding: 8px 15px;
+    padding: 6px 12px;
     border: 2px solid #ffd700;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     margin-left: 10px;
     transition: all 0.3s ease;
@@ -205,11 +205,11 @@ nav a:hover {
 button[type="submit"] {
     background-color: #1a1a1a;
     color: #ffd700;
-    padding: 10px 20px;
+    padding: 6px 12px;
     border: 2px solid #ffd700;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: bold;
     white-space: nowrap;
     transition: all 0.3s ease;
@@ -347,16 +347,18 @@ button[type="submit"]:hover {
 
 .column-header h3 {
     margin: 0;
+    padding-bottom: 5px;
+    white-space: nowrap;
 }
 
 .copy-btn {
     background-color: #1a1a1a;
     color: #ffd700;
-    padding: 8px 15px;
+    padding: 6px 12px;
     border: 2px solid #ffd700;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     transition: all 0.3s ease;
 }
@@ -386,7 +388,7 @@ button[type="submit"]:hover {
 .pangram {
     font-weight: bold;
     color: #2fba13;
-    text-decoration: shadow: 0 0 5px #2fba13;
+    text-shadow: 0 0 5px #2fba13;
 }
 
 .highlight-letter {

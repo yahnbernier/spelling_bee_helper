@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 style="text-align: center; font-size: 2.5em; margin-bottom: 30px; color: #1a1a1a; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+        <h1 style="text-align: center; font-size: 1.8em; margin-bottom: 30px; color: #1a1a1a; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
             🐝 Spelling Bee Helper 🐝
         </h1>
         
@@ -65,7 +65,11 @@
                             </div>
                             
                             <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <label style="font-weight: normal;">Word Length:</label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label style="font-weight: normal;">Word Length:</label>
+                                    <button type="button" id="select-all-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Select All</button>
+                                    <button type="button" id="clear-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Clear All</button>
+                                </div>
                                 <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                     <label class="checkbox-label" style="font-size: 0.85em;">
                                         <input type="checkbox" name="length" value="4" id="len4" {% if not word_lengths or '4' in word_lengths %}checked{% endif %} />
@@ -107,10 +111,6 @@
                                         <input type="checkbox" name="length" value="12+" id="len12plus" {% if not word_lengths or '12+' in word_lengths %}checked{% endif %} />
                                         <span>12+</span>
                                     </label>
-                                    <div style="display: flex; gap: 4px; margin-left: 8px;">
-                                        <button type="button" id="select-all-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Select All</button>
-                                        <button type="button" id="clear-lengths" class="clear-btn" style="padding: 4px 8px; font-size: 0.75em; white-space: nowrap;">Clear All</button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -122,7 +122,7 @@
         <div id="results-display">
             <div class="results-columns">
                 <div class="results-column">
-                    <h3>Candidates: <span id="candidates-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({% if candidates %}{{ candidates.values()|map('length')|sum }}{% else %}0{% endif %})</span></h3>
+                    <h3>Candidates: <span id="candidates-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({% if candidates %}{{ candidates.values()|map('length')|sum }}{% else %}0{% endif %}/{{ possibles|length if possibles else 0 }})</span></h3>
                     <div id="candidates-list">
                         {% if candidates %}
                             {% for length, word_list in candidates.items() %}
@@ -150,31 +150,19 @@
                     <div class="column-header">
                         <h3>Words to Add:</h3>
                         <div style="display: flex; gap: 5px;">
-                            <button type="button" id="clear-words-to-add" class="clear-btn" style="background-color: #e74c3c;">Clear All</button>
-                            <button type="button" id="copy-selected" class="copy-btn">Copy Selected</button>
+                            <button type="button" id="clear-words-to-add" class="clear-btn" style="background-color: #e74c3c;">Clear</button>
+                            <button type="button" id="copy-selected" class="copy-btn">Copy</button>
                         </div>
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <label for="manual-words" style="font-weight: bold; display: block; margin-bottom: 5px;">Manual Entry (one per line):</label>
+                        <label for="manual-words" style="font-weight: bold; display: block; margin-bottom: 5px;">Manual Entry:</label>
                         <textarea id="manual-words" rows="5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-weight: bold; display: block; margin-bottom: 5px; padding-bottom: 5px; border-bottom: 2px solid #ffd700; font-size: 1.17em;">Checked Words:</label>
                     </div>
                     <div id="words-to-add-list">
                         <p>Check words to add them here...</p>
-                    </div>
-                </div>
-                
-                <div class="results-column">
-                    <h3>Possibles: <span id="possibles-count" style="font-size: 0.8em; font-weight: normal; color: #666;">({{ possibles|length if possibles else 0 }})</span></h3>
-                    <div id="possibles-list">
-                        {% if possibles %}
-                            <ul>
-                            {% for word in possibles %}
-                                <li>{{ word }}</li>
-                            {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p>Type letters to see results...</p>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -343,7 +331,6 @@
             }
 
             if (!hasAnyLetters) {
-                possiblesList.innerHTML = '<p>Type letters to see results...</p>';
                 candidatesList.innerHTML = '<p>Type letters to see results...</p>';
                 return;
             }
@@ -415,22 +402,12 @@
             }
             
             // Show loading state
-            possiblesList.innerHTML = '<p>Searching...</p>';
             candidatesList.innerHTML = '<p>Searching...</p>';
             
             fetch(`/api/search?${params}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Update words list
-                    if (data.possibles && data.possibles.length > 0) {
-                        possiblesList.innerHTML = '<ul>' + 
-                            data.possibles.map(word => `<li>${highlightWord(word, mustContain, startsWith)}</li>`).join('') + 
-                            '</ul>';
-                        document.getElementById('possibles-count').textContent = `(${data.possibles.length})`;
-                    } else {
-                        possiblesList.innerHTML = '<p>No words found.</p>';
-                        document.getElementById('possibles-count').textContent = '(0)';
-                    }
+                    const possiblesCount = data.possibles ? data.possibles.length : 0;
                     
                     // Update candidates list (grouped by length)
                     if (data.candidates && Object.keys(data.candidates).length > 0) {
@@ -454,7 +431,7 @@
                             html += '</ul></div>';
                         });
                         candidatesList.innerHTML = html;
-                        document.getElementById('candidates-count').textContent = `(${totalCount})`;
+                        document.getElementById('candidates-count').textContent = `(${totalCount}/${possiblesCount})`;
                         
                         // Add event listeners to checkboxes
                         document.querySelectorAll('.word-checkbox').forEach(checkbox => {
@@ -469,7 +446,7 @@
                         });
                     } else {
                         candidatesList.innerHTML = '<p>No words found.</p>';
-                        document.getElementById('candidates-count').textContent = '(0)';
+                        document.getElementById('candidates-count').textContent = `(0/${possiblesCount})`;
                     }
                 })
                 .catch(error => {
