@@ -2,24 +2,38 @@ import requests
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
+import json
+import base64
 
 # Google API scopes
 SCOPES = ['https://www.googleapis.com/auth/documents']
 
 def get_google_docs_service():
     """Get authenticated Google Docs API service using service account."""
-    # Look for service account key file
-    service_account_file = 'service-account-key.json'
     
-    if not os.path.exists(service_account_file):
-        raise FileNotFoundError(
-            f"Service account key file '{service_account_file}' not found. "
-            "Please follow the instructions in GOOGLE_API_SETUP.md to create and download your service account key."
-        )
-    
-    # Create credentials from service account file
-    creds = service_account.Credentials.from_service_account_file(
-        service_account_file, scopes=SCOPES)
+    # Try environment variable first (for Kubernetes/cloud deployments)
+    if os.getenv('GOOGLE_SERVICE_ACCOUNT_KEY'):
+        try:
+            # Decode base64-encoded key from environment variable
+            key_data = base64.b64decode(os.getenv('GOOGLE_SERVICE_ACCOUNT_KEY'))
+            service_account_info = json.loads(key_data)
+            creds = service_account.Credentials.from_service_account_info(
+                service_account_info, scopes=SCOPES)
+        except Exception as e:
+            raise ValueError(f"Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY environment variable: {str(e)}")
+    else:
+        # Fall back to file (for local development)
+        service_account_file = 'service-account-key.json'
+        
+        if not os.path.exists(service_account_file):
+            raise FileNotFoundError(
+                f"Service account key file '{service_account_file}' not found. "
+                "Please follow the instructions in GOOGLE_API_SETUP.md to create and download your service account key."
+            )
+        
+        # Create credentials from service account file
+        creds = service_account.Credentials.from_service_account_file(
+            service_account_file, scopes=SCOPES)
     
     service = build('docs', 'v1', credentials=creds)
     return service

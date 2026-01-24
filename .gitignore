@@ -48,3 +48,4 @@ Thumbs.db
 
 # Google API credentials
 service-account-key.json
+service-account-key-base64.txt

@@ -55,11 +55,64 @@ Click the "Append" button in your application - it should now work without requi
 ### 7. Security Notes
 - **DO NOT** commit `service-account-key.json` to version control
 - Add it to your `.gitignore` file (already included)
-- For Kubernetes/cloud deployments, use secrets to store the key file
+- For Kubernetes/cloud deployments, use environment variables to store the key
 
 ## For Kubernetes/Cloud Deployments (kuberns.cloud)
 
-### Upload Service Account Key as Secret:
+### Using kuberns.cloud Dashboard (No kubectl needed)
+
+#### Method 1: Upload .env File (Recommended - Easiest)
+
+1. **Encode your service account key to base64:**
+   
+   On Windows PowerShell:
+   ```powershell
+   $content = Get-Content service-account-key.json -Raw
+   $base64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($content))
+   "GOOGLE_SERVICE_ACCOUNT_KEY=$base64" | Out-File -FilePath .env -Encoding ASCII
+   ```
+   
+   On Linux/Mac:
+   ```bash
+   echo "GOOGLE_SERVICE_ACCOUNT_KEY=$(base64 -w 0 service-account-key.json)" > .env
+   ```
+
+2. **Upload the `.env` file to kuberns.cloud:**
+   - In dashboard.kuberns.com, navigate to your application settings
+   - Look for "Environment Variables" or "Upload .env file" option
+   - Upload the `.env` file you just created
+   - Save and redeploy your application
+
+3. **The app will automatically use the environment variable when deployed**
+
+#### Method 2: Manually Add Environment Variable
+
+1. **Encode your service account key to base64:**
+   
+   On Windows PowerShell:
+   ```powershell
+   $content = Get-Content service-account-key.json -Raw
+   [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($content)) | Out-File -FilePath service-account-key-base64.txt -NoNewline
+   ```
+   
+   On Linux/Mac:
+   ```bash
+   base64 -w 0 service-account-key.json > service-account-key-base64.txt
+   ```
+
+2. **Open the file `service-account-key-base64.txt` and copy the base64 string**
+
+3. **In dashboard.kuberns.com:**
+   - Navigate to your application settings
+   - Find the "Environment Variables" section
+   - Add a new environment variable:
+     - **Name**: `GOOGLE_SERVICE_ACCOUNT_KEY`
+     - **Value**: Paste the base64 string you copied
+   - Save and redeploy your application
+
+### Using kubectl (Alternative method)
+
+If you have kubectl access:
 
 ```bash
 # Create a Kubernetes secret from your service account key
@@ -67,7 +120,7 @@ kubectl create secret generic google-service-account \
   --from-file=service-account-key.json=./service-account-key.json
 ```
 
-### Mount the Secret in Your Deployment:
+Mount the Secret in Your Deployment:
 
 ```yaml
 apiVersion: apps/v1
@@ -90,8 +143,6 @@ spec:
         secret:
           secretName: google-service-account
 ```
-
-The app will automatically find and use the `service-account-key.json` file.
 
 ## How It Works
 
