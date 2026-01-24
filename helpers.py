@@ -1,4 +1,28 @@
 import requests
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+import os
+
+# Google API scopes
+SCOPES = ['https://www.googleapis.com/auth/documents']
+
+def get_google_docs_service():
+    """Get authenticated Google Docs API service using service account."""
+    # Look for service account key file
+    service_account_file = 'service-account-key.json'
+    
+    if not os.path.exists(service_account_file):
+        raise FileNotFoundError(
+            f"Service account key file '{service_account_file}' not found. "
+            "Please follow the instructions in GOOGLE_API_SETUP.md to create and download your service account key."
+        )
+    
+    # Create credentials from service account file
+    creds = service_account.Credentials.from_service_account_file(
+        service_account_file, scopes=SCOPES)
+    
+    service = build('docs', 'v1', credentials=creds)
+    return service
 
 def load_google_drive_file(file_id, is_doc=True):
     """Load text content from a Google Drive file ID."""
@@ -14,6 +38,93 @@ def load_google_drive_file(file_id, is_doc=True):
         return response.text.lstrip('\ufeff')
     except requests.exceptions.RequestException as e:
         return f"Error loading file: {str(e)}"
+
+def append_words_to_google_doc(file_id, new_words):
+    """
+    Append words to a Google Doc and sort all words alphabetically.
+    
+    Args:
+        file_id: The Google Drive document ID
+        new_words: List of words to add
+        
+    Returns:
+        dict with status and message
+    """
+    try:
+        service = get_google_docs_service()
+        
+        # First, read the current document content
+        document = service.documents().get(documentId=file_id).execute()
+        content = document.get('body').get('content')
+        
+        # Extract text from the document
+        current_text = ''
+        for element in content:
+            if 'paragraph' in element:
+                for text_run in element['paragraph'].get('elements', []):
+                    if 'textRun' in text_run:
+                        current_text += text_run['textRun'].get('content', '')
+        
+        # Parse existing words
+        existing_words = set()
+        for line in current_text.splitlines():
+            line = line.strip()
+            if line:
+                existing_words.add(line.lower())
+        
+        # Add new words
+        for word in new_words:
+            word = word.strip().lower()
+            if word:
+                existing_words.add(word)
+        
+        # Sort all words alphabetically
+        sorted_words = sorted(existing_words)
+        new_content = '\n'.join(sorted_words)
+        
+        # Get document length to delete all content
+        doc_length = len(current_text)
+        
+        # Build requests to update the document
+        requests_list = [
+            # Delete all existing content
+            {
+                'deleteContentRange': {
+                    'range': {
+                        'startIndex': 1,
+                        'endIndex': doc_length
+                    }
+                }
+            },
+            # Insert sorted content
+            {
+                'insertText': {
+                    'location': {
+                        'index': 1
+                    },
+                    'text': new_content
+                }
+            }
+        ]
+        
+        # Execute the batch update
+        result = service.documents().batchUpdate(
+            documentId=file_id,
+            body={'requests': requests_list}
+        ).execute()
+        
+        return {
+            'status': 'success',
+            'message': f'Added {len(new_words)} new words. Total: {len(sorted_words)} words.',
+            'total_words': len(sorted_words),
+            'new_words_count': len(new_words)
+        }
+        
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': str(e)
+        }
 
 def process_word_lines(lines):
     """Process word lines, splitting on '/' and spaces to create separate entries."""

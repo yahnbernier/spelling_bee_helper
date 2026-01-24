@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <!-- Toast notification container -->
+    <div id="toast-container" class="toast-container"></div>
+    
     <div class="container">
         <h1 style="text-align: center; font-size: 1.8em; margin-bottom: 30px; color: #1a1a1a; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
             🐝 Spelling Bee Helper 🐝
@@ -152,6 +155,7 @@
                         <div style="display: flex; gap: 5px;">
                             <button type="button" id="clear-words-to-add" class="clear-btn" style="background-color: #e74c3c;">Clear</button>
                             <button type="button" id="copy-selected" class="copy-btn">Copy</button>
+                            <button type="button" id="append-selected" class="copy-btn" style="background-color: #27ae60;">Append</button>
                         </div>
                     </div>
                     <div style="margin-bottom: 15px;">
@@ -169,6 +173,26 @@
         </div>
         
         <script>
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : (type === 'error' ? '✗' : 'ℹ');
+            toast.innerHTML = `<span style="font-size: 18px; font-weight: bold;">${icon}</span><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => {
+                    container.removeChild(toast);
+                }, 300);
+            }, 5000);
+        }
+        
         // Real-time search functionality
         let searchTimeout;
         const possibles = document.getElementById('possibles');
@@ -596,6 +620,79 @@
             }).catch(err => {
                 console.error('Failed to copy:', err);
                 alert('Failed to copy to clipboard. Please try again.');
+            });
+        });
+        
+        // Append Selected button functionality
+        const appendSelectedBtn = document.getElementById('append-selected');
+        appendSelectedBtn.addEventListener('click', function() {
+            // Get manual words from textarea
+            const manualWords = manualWordsTextarea.value
+                .split('\n')
+                .map(word => word.trim().toLowerCase())
+                .filter(word => word.length > 0);
+            
+            // Combine with checked words
+            const allWords = new Set([...wordsToAdd, ...manualWords]);
+            
+            if (allWords.size === 0) {
+                alert('Please select at least one word to add.');
+                return;
+            }
+            
+            const sortedWords = Array.from(allWords).sort();
+            
+            // Show loading state
+            const originalText = appendSelectedBtn.textContent;
+            appendSelectedBtn.textContent = 'Appending...';
+            appendSelectedBtn.disabled = true;
+            
+            // Send words to server
+            fetch('/append', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ words: sortedWords })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    appendSelectedBtn.textContent = 'Success!';
+                    
+                    // Clear the words to add
+                    wordsToAdd.clear();
+                    manualWordsTextarea.value = '';
+                    updateWordsToAddDisplay();
+                    document.querySelectorAll('.word-checkbox:checked').forEach(cb => cb.checked = false);
+                    
+                    // Refresh the search results immediately to show updated word list
+                    // This will remove checkboxes from words that are now in the regular list
+                    performSearch();
+                    
+                    // Show success toast and reset button after refresh
+                    setTimeout(() => {
+                        showToast(`Successfully appended ${data.new_words_count} words. Total words in document: ${data.total_words}`, 'success');
+                        appendSelectedBtn.textContent = originalText;
+                        appendSelectedBtn.disabled = false;
+                    }, 500);
+                } else {
+                    appendSelectedBtn.textContent = 'Error!';
+                    showToast('Failed to append words: ' + data.message, 'error');
+                    setTimeout(() => {
+                        appendSelectedBtn.textContent = originalText;
+                        appendSelectedBtn.disabled = false;
+                    }, 2000);
+                }
+            })
+            .catch(err => {
+                console.error('Append error:', err);
+                appendSelectedBtn.textContent = 'Error!';
+                showToast('Failed to append words. Please try again.', 'error');
+                setTimeout(() => {
+                    appendSelectedBtn.textContent = originalText;
+                    appendSelectedBtn.disabled = false;
+                }, 2000);
             });
         });
         

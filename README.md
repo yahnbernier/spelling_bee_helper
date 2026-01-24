@@ -61,14 +61,44 @@ spelling_bee/
 
 ## Features
 
-- Basic Flask web application structure
-- Template rendering with Jinja2
-- Static file serving (CSS, JavaScript)
-- Simple navigation between pages
+- **Letter-based word search**: Find words using up to 7 letters
+- **Advanced filters**: 
+  - "Starts With" filter (up to 2 letters)
+  - "Must Contain" filter (1 letter)
+  - Word length filters (4-12+ letters)
+- **Word list options**: Regular words vs. All words
+- **Real-time search**: Results update as you type
+- **Word management**:
+  - Check words to add them to your list
+  - Manual entry for additional words
+  - Copy selected words to clipboard
+  - **Append to Google Drive**: Save selected words directly to your Google Drive document with automatic alphabetical sorting
+- **Pangram detection**: Automatically highlights words that use all 7 letters
+- **Persistent search**: Search state is saved and restored between sessions
+- **Live reload**: Refresh word lists from Google Drive without restarting
+
+## Append to Google Drive Feature
+
+The "Append" button allows you to save selected words directly to your Google Drive document. The feature:
+- Appends new words to your Google Drive document (identified by `GOOGLE_FILE_ID_REGULAR_WORDS`)
+- Automatically sorts the entire document alphabetically
+- Removes duplicates
+- Reloads the word list after appending
+
+### Setup Google Drive Integration
+
+To use the Append feature, you need to set up Google API credentials. See [GOOGLE_API_SETUP.md](GOOGLE_API_SETUP.md) for detailed instructions.
+
+Quick steps:
+1. Create a Google Cloud Project
+2. Enable Google Docs API
+3. Download OAuth credentials as `credentials.json`
+4. Place `credentials.json` in the project root
+5. First time you click "Append", you'll authenticate via browser
+6. A `token.pickle` file will be created for future authentication
 
 ## Next Steps
 
-- Add spelling bee game logic
-- Implement word database
-- Add user authentication (optional)
-- Create API endpoints for game functionality
+- Implement additional word expansion rules
+- Add word history tracking
+- Create export options for different formats

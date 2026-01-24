@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import requests
 import time
-from  helpers import *
+from helpers import *
 
 app = Flask(__name__)
 
@@ -152,6 +152,36 @@ def reload():
             'message': 'Word lists reloaded successfully',
             'stats': stats
         })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/append', methods=['POST'])
+def append():
+    """Append selected words to Google Drive document and sort alphabetically."""
+    try:
+        data = request.get_json()
+        words_to_append = data.get('words', [])
+        
+        if not words_to_append:
+            return jsonify({
+                'status': 'error',
+                'message': 'No words provided'
+            }), 400
+        
+        # Append words to Google Doc
+        result = append_words_to_google_doc(GOOGLE_FILE_ID_REGULAR_WORDS, words_to_append)
+        
+        if result['status'] == 'success':
+            # Reload the word lists after appending
+            stats = load_regular_words(GOOGLE_FILE_ID_REGULAR_WORDS)
+            result['reload_stats'] = stats
+            print(f" * Appended {result['new_words_count']} words. Total: {result['total_words']}. Reloaded word list.")
+        
+        return jsonify(result)
+        
     except Exception as e:
         return jsonify({
             'status': 'error',

@@ -45,3 +45,6 @@ Thumbs.db
 # Environment variables
 .env
 .flaskenv
+
+# Google API credentials
+service-account-key.json
