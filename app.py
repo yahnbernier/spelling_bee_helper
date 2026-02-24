@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Google drive file with regular words
 GOOGLE_FILE_ID_REGULAR_WORDS = '1fd_ml5_Lk8jv09LIbYddH_tgdg-6TozZyuXxhoJ4XHI'
-ALL_WORDS_FILENAME = 'static/words_spellingbee.txt'
+ALL_WORDS_FILENAMES = [ 'static/words_spellingbee.txt', 'static/words_alpha.txt' ]
 
 # word file just a .txt file
 def load_word_file(file_path):
@@ -48,16 +48,19 @@ def load_regular_words(file_id):
     }
 
 # Load all words list first (regular file, not a document)
-def load_all_words( all_words_filename ):
-    start_time = time.time()
-    contents = load_word_file( all_words_filename ) 
-    all_words = set(contents.splitlines())
-    load_time = time.time() - start_time
-    print(f" * Loaded all words: {len(all_words)} in {load_time:.3f}s")
+def load_all_words( all_words_filenames ):
+    all_words = set()
+    for filename in all_words_filenames:
+        start_time = time.time()
+        contents = load_word_file( filename ) 
+        all_words.update(contents.splitlines())
+        load_time = time.time() - start_time
+        print(f" * Loaded all words from {filename}: {len(contents.splitlines())} in {load_time:.3f}s")
+    print(f" * Total all words: {len(all_words)}")
     return all_words
 
 # load all words first
-all_words = load_all_words( ALL_WORDS_FILENAME )
+all_words = load_all_words( ALL_WORDS_FILENAMES )
 
 # Load regular words using shared function
 load_regular_words(GOOGLE_FILE_ID_REGULAR_WORDS)
